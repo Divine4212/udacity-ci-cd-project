@@ -107,8 +107,8 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm aufit fix --force --audit-level=scritical
-            npm audit --audit-level=critical
+            npm aufit fix --force --audit-level=critical
+            npm audit --audit-level-critical
   scan-backend:
     docker:
      - image: cimg/node:13.8.0
@@ -123,7 +123,7 @@ jobs:
             npm install
             npm aufit fix --force --audit-level=critical
             npm aufit fix --force --audit-level=critical
-            npm audit --audit-level=critical
+            npm audit --audit-level-critical
 
 #   deploy-infrastructure:
 #     docker:
