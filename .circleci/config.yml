@@ -8,7 +8,7 @@ commands:
          name: Install AWS CLI v2
          command:
            curl -o awscliv2.sig https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip.sig
-           sudo unzip awscliv2.zip
+           unzip awscliv2.zip
            sudo ./aws/install
 
   install_ansible:
