@@ -14,7 +14,7 @@ commands:
           command: |
             # Your code here
             aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
-            aws s3 rm s3://udapeople-kenechukwu-<<parameters.workflow_id>> --recursive
+            arn:aws:s3:::udapeople-kenechukwu-<<parameters.workflow_id>> --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
 #   revert-migrations:
@@ -162,18 +162,18 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
             --output text >> ~/project/.circleci/ansible/inventory.txt
             cat ~/project/.circleci/ansible/inventory.txt
-      - run:
-          name: save the new back-end url to memory using memstach
-          command: |
-            backend_url=$(aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text)
-            curl -H "Content-Type: text/plain" \
-            -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
-            --request PUT \
-            --data "http://${backend_url}:3030" \
-            https://api.memstash.io/values/backend_url
+      # - run:
+      #     name: save the new back-end url to memory using memstach
+      #     command: |
+      #       backend_url=$(aws ec2 describe-instances \
+      #       --query 'Reservations[*].Instances[*].PublicIpAddress' \
+      #       --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+      #       --output text)
+      #       curl -H "Content-Type: text/plain" \
+      #       -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
+      #       --request PUT \
+      #       --data "http://${backend_url}:3030" \
+      #       https://api.memstash.io/values/backend_url
       - persist_to_workspace:
           root: ~/
           paths:
