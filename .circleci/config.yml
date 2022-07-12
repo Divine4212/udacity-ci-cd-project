@@ -83,7 +83,7 @@ jobs:
                 
   test-backend:
     docker:
-       - image: cimg/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -97,7 +97,7 @@ jobs:
             
   scan-frontend:
     docker:
-     - image: cimg/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -111,7 +111,7 @@ jobs:
             npm audit --audit-level=critical
   scan-backend:
     docker:
-     - image: cimg/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -127,9 +127,9 @@ jobs:
 
   # deploy-infrastructure:
   #   docker:
-  #    - image:  amazon/aws-cli
+  #     - image: cimg/base:stable
   #   steps:
-  #     - Checkout code from git
+  #     - Checkout
   #     -   install tar and gzip
   #     - run:
   #         name: Ensure back-end infrastructure exists
