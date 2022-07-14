@@ -18,26 +18,26 @@ commands:
             arn:aws:s3:::udapeople-kenedivine-<<parameters.workflow_id>> --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
-# revert-migrations:
-#     description: Revert the last migration if successfully run in the current workflow.
-#     parameters:
-#       # Add parameter here
-#       workflow_id:
-#         type: string
-#     steps:
-#       - run:
-#           name: Revert migrations
-#           # Add when this will run
-#           when: on_fail
-#           command: |
-#             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#             SUCCESS=$(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
-#             --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.workflow_id >>)
-#             if(( $SUCCESS==1 )); 
-#             then
-#             cd backend
-#             npm run migrations:revert
-#             fi
+revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      # Add parameter here
+      workflow_id:
+        type: string
+    steps:
+      - run:
+          name: Revert migrations
+          # Add when this will run
+          when: on_fail
+          command: |
+            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
+            SUCCESS=$(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
+            --request GET https://kvdb.io/${KVDB_BUCKET}/migration_<< parameters.workflow_id >>)
+            if(( $SUCCESS==1 )); 
+            then
+            cd backend
+            npm run migrations:revert
+            fi
             
 jobs:
   build-frontend:
@@ -225,35 +225,35 @@ jobs:
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
-#   run-migrations:
-#     docker:
-#       - image: sleavely/node-awscli:14.x
-#     steps:
-#       - checkout
-#       - run:
-#           name: Run migrations
-#           command: |
-#             cd backend
-#             cat .env
-#             npm i
-#             npm run build
-#             npm run migrations
-#       - run:
-#           name: Send migration results to memstash
-#           command: |
-#             echo "has been done successfully" > ./migration_status.txt
-#             pwd && ls -al
-#             if grep -q "has been done successfully" ./migration_status.txt 
-#             then 
-#               echo "has been done successfully"
-#               curl -H "Content-Type: text/plain" -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" --request PUT --data "1" https://api.memstash.io/values/migrations-${CIRCLE_WORKFLOW_ID:0:7}
-#             else
-#               echo "has failed"
-#               curl -H "Content-Type: text/plain" -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" --request PUT --data "0" https://api.memstash.io/values/migrations-${CIRCLE_WORKFLOW_ID:0:7}
-#             fi
-#       # Here's where you will add some code to rollback on failure
-#       - destroy-environment:
-#           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+  run-migrations:
+    docker:
+      - image: sleavely/node-awscli:14.x
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            cat .env
+            npm i
+            npm run build
+            npm run migrations
+      - run:
+          name: Send migration results to kvdb
+          command: |
+            echo "has been done successfully" > ./migration_status.txt
+            pwd && ls -al
+            if grep -q "has been done successfully" ./migration_status.txt 
+            then 
+              echo "has been done successfully"
+              curl -H "Content-Type: text/plain" -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" --request PUT --data "1" https://kvdb.io/${KVDB_BUCKET}/migrations-${CIRCLE_WORKFLOW_ID:0:7}
+            else
+              echo "has failed"
+              curl -H "Content-Type: text/plain" -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" --request PUT --data "0" https://kvdb.io/${KVDB_BUCKET}/migrations-${CIRCLE_WORKFLOW_ID:0:7}
+            fi
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           
 #   deploy-frontend:
 #     docker:
@@ -417,8 +417,8 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
       # - deploy-frontend:
       #     requires: [run-migrations]
       # - deploy-backend:
