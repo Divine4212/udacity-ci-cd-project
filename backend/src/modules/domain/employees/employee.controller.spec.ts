@@ -204,7 +204,7 @@ describe('Employee Controller', () => {
     it('should dispatch update employee effective date command', async () => {
       // Arrange
       const request = {
-        employeeId: 101,
+        employeeId: 100,
         effectiveDate: '2018-22-10',
         };
 
