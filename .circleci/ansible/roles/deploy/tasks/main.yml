@@ -4,12 +4,12 @@
       path: ~/backend-app
       state: directory
       
-  # - name: "move files to server"
-  #   become: yes
-  #   synchronize:
-  #     src: /root/project/backend/dist
-  #     dest: ./udapeople
-  #     recursive: true
+  - name: "move files to server"
+    become: yes
+    synchronize:
+      src: /root/project/backend/dist
+      dest: ./udapeople
+      recursive: true
 
   - name: "move node modules"
     become: yes
