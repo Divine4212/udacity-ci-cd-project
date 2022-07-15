@@ -11,7 +11,7 @@
   - name: "move files to server"
     become: yes
     synchronize:
-      src: /root/project/backend/src
+      src: /root/project/backend/dist
       dest: ./udapeople
       recursive: true
 
@@ -26,7 +26,7 @@
     become: true
     command: pm2 start -f ./main.js
     args:
-      chdir: ./udapeople/src
+      chdir: ./udapeople/dist
     environment:
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
