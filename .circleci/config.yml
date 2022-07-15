@@ -247,62 +247,63 @@ jobs:
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           
-#   deploy-frontend:
-#     docker:
-#       - image: sleavely/node-awscli:14.x
-#     steps:
-#       - checkout
-#       - attach_workspace:
-#           at: /root
-#       - run:
-#           name: Get backend url
-#           command: |
-#             API_URL=$(curl -H "Content-Type: text/plain" \
-#             -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
-#             --request GET \
-#             https://api.memstash.io/values/backend_url)
-#             echo $API_URL
-#             echo "${API_URL}"
-#             echo "NODE_ENV=production" >> frontend/.env
-#             echo "API_URL=${API_URL}" >> frontend/.env
-#             cat frontend/.env
-#       - run:
-#           name: Deploy frontend objects
-#           working_directory: ./frontend
-#           command: |
-#             npm i
-#             npm run build
-#             ls -l
-#             aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-#       # Here's where you will add some code to rollback on failure
-#       - destroy-environment:
-#           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+  deploy-frontend:
+    docker:
+      - image: sleavely/node-awscli:14.x
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /root
+      - run:
+          name: Get backend url
+          command: |
+            API_URL=$(curl -H "Content-Type: text/plain" \
+            -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
+            --request GET \
+            https://kvdb.io/values/backend_url)
+            echo $API_URL
+            echo "${API_URL}"
+            echo "NODE_ENV=production" >> frontend/.env
+            echo "API_URL=${API_URL}" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          working_directory: ./frontend
+          command: |
+            cd frontend
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
     
-#   deploy-backend:
-#     docker:
-#       - image: python:3.7-alpine3.11
-#     steps:
-#       - checkout
-#       - add_ssh_keys:
-#           fingerprints: ["eb:8c:c3:a9:4b:36:3f:c7:69:df:e2:36:d3:22:f5:ed"]
-#       - attach_workspace:
-#           at: /root
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             apk add --update ansible rsync 
-#             apk add curl
-#             pip3 install awscli
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             ls /root
-#             ls /root/project/backend/
-#             cat ~/project/.circleci/ansible/inventory.txt
-#             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
-#       # Here's where you will add some code to rollback on failure
-#       - destroy-environment:
-#           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["7a:5f:76:c4:21:24:b3:91:30:e0:70:10:09:28:ff:3c"]
+      - attach_workspace:
+          at: /root
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible rsync 
+            apk add curl
+            pip3 install awscli
+      - run:
+          name: Deploy backend
+          command: |
+            ls /root
+            ls /root/project/backend/
+            cat ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
 #   smoke-test:
 #     docker:
@@ -411,10 +412,10 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
