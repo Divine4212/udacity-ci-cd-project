@@ -1,15 +1,15 @@
 ---
   - name: "Creates backend app directory"
     file:
-     path: ~/backend-app
-     state: directory
+      path: ~/backend-app
+      state: directory
       
-  - name: "move files to server"
-    become: yes
-    synchronize:
-      src: /root/project/backend/
-      dest: ./udapeople
-      recursive: true
+  # - name: "move files to server"
+  #   become: yes
+  #   synchronize:
+  #     src: /root/project/backend/dist
+  #     dest: ./udapeople
+  #     recursive: true
 
   - name: "move node modules"
     become: yes
@@ -22,7 +22,7 @@
     become: true
     command: pm2 start -f ./main.js
     args:
-      chdir: ./udapeople/
+      chdir: ./udapeople/dist
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
       TYPEORM_MIGRATIONS_DIR: "./migrations"
