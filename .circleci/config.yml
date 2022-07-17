@@ -1,26 +1,25 @@
 version: 2.1
 
 commands:
-  # install_awscli:
-  #   description: Install AWS CLI v2
-  #   steps:
-  #     - run:
-  #         name: Install AWS CLI v2
-  #         command: |
-  #           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  #           unzip awscliv2.zip
-  #           sudo ./aws/install
-  
-  # install_ansible:
-  #   description: Install Ansible 
-  #   steps:
-  #     - run:
-  #         name: Install Ansible 
-  #         command: |
-  #           sudo apt update
-  #           sudo apt install software-properties-common -y
-  #           sudo add-apt-repository --yes --update ppa:ansible/ansible
-  #           sudo apt install ansible -y 
+  install_awscli:
+    description: Install AWS CLI v2
+    steps:
+      - run:
+          name: Install AWS CLI v2
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+  install_ansible:
+    description: Install Ansible 
+    steps:
+      - run:
+          name: Install Ansible 
+          command: |
+            sudo apt update
+            sudo apt install software-properties-common -y
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible -y 
   install_nodejs:
     description: Install Node.js 13
     steps:
@@ -212,17 +211,13 @@ jobs:
            TYPEORM_ENTITIES: $TYPEORM_ENTITIES
     steps:
       - checkout
-      - run:
-          name: Install Ansible 
-          command: |
-             apt update
-             apt install software-properties-common -y
-             add-apt-repository --yes --update ppa:ansible/ansible
-             apt install ansible -y 
       - add_ssh_keys:
           fingerprints: ["7a:5f:76:c4:21:24:b3:91:30:e0:70:10:09:28:ff:3c"]
       - attach_workspace:
           at: ~/
+      - run: install dependencies
+      - install_awscli
+      - install_ansible
       - run:
           name: Configure server
           command: |
@@ -258,8 +253,10 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: install_awscli
-             install_nodejs
+      - run: Install AWSCLI v2
+      - install_awscli
+      - run: Install Ansible
+      - install_ansible
       - attach_workspace:
           at: /root
       - run:
@@ -291,29 +288,31 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - run: install_awscli
-             install_nodejs
-             install_ansible
       - add_ssh_keys:
           fingerprints: ["7a:5f:76:c4:21:24:b3:91:30:e0:70:10:09:28:ff:3c"]
       - attach_workspace:
           at: ~/ 
       - restore_cache:
           keys: [backend_build]
-      - run:
-          name: Install dependencies
-          command: |
-            cd backend
-            npm install
+      - run: Install dependencies
+      - install_nodejs
+      - install_awscli
+      - install_ansible
       - run:
           name: Deploy backend
           command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            tar -C backend -czvf artifact.tar.gz .
+            
             cd .circleci/ansible
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
-            cat ~/project/.circleci/ansible/inventory.txt
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml  
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
@@ -322,8 +321,9 @@ jobs:
       - image: alpine:latest
     steps:
       - checkout
-      - run: install_awscli
-             install_nodejs
+      - run: install dependencies
+      - install_awscli
+      - install_nodejs
       - attach_workspace:
           at: /root
       - run:
@@ -360,8 +360,9 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: install_awscli
-             install_nodejs
+      - run: install dependencies
+      - install_awscli
+      - install_nodejs
       - run:
           name: Save Old Workflow ID to kvdb.io
           command: |
@@ -387,8 +388,9 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: install_awscli
-             install_nodejs
+      - run: install dependencies
+      - install_awscli
+      - install_nodejs
       - run:
           name: Remove old stacks and files
           command: |

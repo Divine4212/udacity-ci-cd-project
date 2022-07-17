@@ -1,10 +1,10 @@
 ---
-- name: "Creates directory backend-app"
+- name: "creates directory backend-app"
   file:
     path: ~/backend-app
     state: directory
 
-- name: "Install Node Dependencies"
+- name: "node dependencies install"
   shell: |
     cd ~/backend-app
     npm install
