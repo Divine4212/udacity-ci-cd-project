@@ -11,16 +11,16 @@ commands:
   #           unzip awscliv2.zip
   #           sudo ./aws/install
   
-  install_ansible:
-    description: Install Ansible 
-    steps:
-      - run:
-          name: Install Ansible 
-          command: |
-            sudo apt update
-            sudo apt install software-properties-common -y
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible -y 
+  # install_ansible:
+  #   description: Install Ansible 
+  #   steps:
+  #     - run:
+  #         name: Install Ansible 
+  #         command: |
+  #           sudo apt update
+  #           sudo apt install software-properties-common -y
+  #           sudo add-apt-repository --yes --update ppa:ansible/ansible
+  #           sudo apt install ansible -y 
   install_nodejs:
     description: Install Node.js 13
     steps:
@@ -213,11 +213,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: install_awscli
+          name: Install Ansible 
           command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+            sudo apt update
+            sudo apt install software-properties-common -y
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible -y 
       - add_ssh_keys:
           fingerprints: ["7a:5f:76:c4:21:24:b3:91:30:e0:70:10:09:28:ff:3c"]
       - attach_workspace:
