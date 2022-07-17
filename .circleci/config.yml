@@ -202,8 +202,6 @@ jobs:
            TYPEORM_ENTITIES: $TYPEORM_ENTITIES
     steps:
       - checkout
-      - run: install_awscli
-             install_ansible
       - add_ssh_keys:
           fingerprints: ["7a:5f:76:c4:21:24:b3:91:30:e0:70:10:09:28:ff:3c"]
       - attach_workspace:
